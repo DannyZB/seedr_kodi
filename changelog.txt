@@ -1,2 +1,2 @@
-v0.0.1
-- Initial version
+v0.1.0
+- Initial version released to official Kodi Plugins Repository
