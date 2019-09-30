@@ -155,6 +155,9 @@ if 'access_token' in settings:
             li.addContextMenuItems([(__language__(id=32006), 'Container.Refresh'),
                                     (__language__(id=32007), 'Action(ParentDir)')])
 
+            li.setProperty('IsPlayable', 'True')
+            li.setInfo('video',infoLabels={'title': f['name']})
+
             xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li)
         elif f['play_audio'] is True:
             url = API_URL + '/media/mp3/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
@@ -162,6 +165,9 @@ if 'access_token' in settings:
             li = xbmcgui.ListItem(f['name'])
             li.addContextMenuItems([(__language__(id=32006), 'Container.Refresh'),
                                     (__language__(id=32007), 'Action(ParentDir)')])
+
+            li.setProperty('IsPlayable', 'True')
+            li.setInfo('audio',infoLabels={'title': f['name']})
 
             xbmcplugin.addDirectoryItem(handle=addon_handle, url=url, listitem=li)
 
