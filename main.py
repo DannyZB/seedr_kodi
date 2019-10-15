@@ -147,7 +147,8 @@ if 'access_token' in settings:
 
     for f in files:
         if f['play_video'] is True:
-            url = API_URL + '/media/hls/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
+            response = requests.get("https://www.seedr.cc/rest/file/"+ str(f['folder_file_id']), auth=('<USER>', '<PASSWORD'), allow_redirects=False)
+            url = response.headers['Location']
             thumbnail = API_URL + '/media/image/320/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
             icon = API_URL + '/thumbnail/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
 
