@@ -4,6 +4,7 @@ import xbmcplugin
 import xbmcaddon
 import xbmcgui
 import xbmc
+import xbmcvfs
 
 import json
 import time
@@ -11,7 +12,9 @@ import os.path
 
 import requests
 import urllib
-import urlparse
+from urllib.parse import urlparse
+from urllib.parse import urlencode
+from urllib.parse import parse_qs
 
 API_URL = 'https://www.seedr.cc/api'
 DEVICE_CODE_URL = 'https://www.seedr.cc/api/device/code'
@@ -22,7 +25,7 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.seedr')
 __language__ = __settings__.getLocalizedString
 
 def build_url(query):
-    return base_url + '?' + urllib.urlencode(query)
+    return base_url + '?' + urlencode(query)
 
 
 def fetch_json_dictionary(url, post_params=None):
@@ -71,10 +74,9 @@ def get_access_token():
     settings['device_code'] = device_code_dict['device_code']
     settings['device_code_dict'] = device_code_dict  
 
-    line1 = __language__(id=32000) + ' '  + device_code_dict['verification_url'] + ' ' +  __language__(id=32001) + ' ' + device_code_dict['user_code'][0:4] + ' ' + device_code_dict['user_code'][4:]
-    line2 = __language__(id=32002) 
+    message = __language__(id=32000) + ' '  + device_code_dict['verification_url'] + ' ' +  __language__(id=32001) + ' ' + device_code_dict['user_code'][0:4] + ' ' + device_code_dict['user_code'][4:] + "\n" + __language__(id=32002) 
 
-    xbmcgui.Dialog().ok(addonname, line1, line2)
+    xbmcgui.Dialog().ok(addonname, message)
 
     token_dict = None
     access_token = None
@@ -101,15 +103,15 @@ def get_access_token():
 addon = xbmcaddon.Addon()
 addonname = addon.getAddonInfo('name')
 
-__profile__ = xbmc.translatePath(addon.getAddonInfo('profile')).decode("utf-8")
+__profile__ = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
 if not os.path.isdir(__profile__):
     os.makedirs(__profile__)
 
-data_file = xbmc.translatePath(os.path.join(__profile__, 'settings.json')).decode("utf-8")
+data_file = xbmcvfs.translatePath(os.path.join(__profile__, 'settings.json'))
 
 settings = load_dict(data_file)
 
-args = urlparse.parse_qs(sys.argv[2][1:])
+args = parse_qs(sys.argv[2][1:])
 mode = args.get('mode', None)
 
 addon_handle = int(sys.argv[1])
@@ -139,7 +141,8 @@ if 'access_token' in settings:
     for folder in folders:
         url = build_url({'mode': 'folder', 'folder_id': folder['id']})
 
-        li = xbmcgui.ListItem(folder['name'], iconImage='DefaultFolder.png')
+        li = xbmcgui.ListItem(folder['name'])
+        li.setArt({'icon':'DefaultFolder.png'})
         li.addContextMenuItems([(__language__(id=32006), 'Container.Refresh'),
                                 (__language__(id=32007), 'Action(ParentDir)')])
         xbmcplugin.addDirectoryItem(handle=addon_handle, url=url,
@@ -151,7 +154,11 @@ if 'access_token' in settings:
             thumbnail = API_URL + '/media/image/320/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
             icon = API_URL + '/thumbnail/' + str(f['folder_file_id']) + '?access_token=' + settings['access_token']
 
-            li = xbmcgui.ListItem(f['name'], iconImage=icon, thumbnailImage=thumbnail)
+            li = xbmcgui.ListItem(f['name'])
+            li.setArt({
+                'icon':icon,
+                'thumb':thumbnail
+            })
             li.addContextMenuItems([(__language__(id=32006), 'Container.Refresh'),
                                     (__language__(id=32007), 'Action(ParentDir)')])
 
